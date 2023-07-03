@@ -23,7 +23,7 @@ cleaned_df = spark.sql("""
      limit 10
 """)
 
-# cleaned_df.show()
+cleaned_df.show()
 
 output_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/limit_output"
 
