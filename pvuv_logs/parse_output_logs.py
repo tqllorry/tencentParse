@@ -25,10 +25,10 @@ cleaned_df = spark.sql("""
 
 cleaned_df.show()
 
-output_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/limit_output"
+output_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/output"
 
 # 导出parquet文件
-cleaned_df.repartition(1).write.mode("overwrite").format("parquet").save(output_path)
+cleaned_df.repartition(3).write.mode("overwrite").format("parquet").save(output_path)
 
 # 导出成csv
 # cleaned_df.repartition(3).write.mode("overwrite").format("com.databricks.spark.csv").option("header", "false").save(output_path)
