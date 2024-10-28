@@ -4,7 +4,7 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("JsonParsingApp").master("local[*]").getOrCreate()
 
 # 读取本地文件
-input_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/2023-04"
+input_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/202410/input"
 df = spark.read.json(input_path)
 
 df.createOrReplaceTempView("my_json")
