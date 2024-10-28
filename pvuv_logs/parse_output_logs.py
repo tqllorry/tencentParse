@@ -4,7 +4,7 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("JsonParsingApp").master("local[*]").getOrCreate()
 
 # 读取本地文件
-input_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/2023-04"
+input_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/2023-09"
 df = spark.read.json(input_path)
 
 df.createOrReplaceTempView("my_json")
@@ -20,10 +20,9 @@ cleaned_df = spark.sql("""
             else 'web' end as agent,
         referrer
      from my_json
-     limit 10
 """)
 
-cleaned_df.show()
+# cleaned_df.show()
 
 output_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/output"
 
