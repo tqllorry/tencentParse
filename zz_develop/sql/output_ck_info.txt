@@ -1,0 +1,5 @@
+update&^*=ai_faq&^*=disk_node_id&^*=String DEFAULT \'\'
+update&^*=ai_faq&^*=is_audited&^*=Int8 DEFAULT 1
+update&^*=honor_awards&^*=is_revoked&^*=Int8 DEFAULT 0
+update&^*=honor_awards&^*=revoked_by&^*=String DEFAULT \'\'
+add&^*=platform_message_logs&^*=`id` UInt64, `news_log_id` String, `push_data` String, `push_platform` String, `platform_corp_id` String, `sent_user_count` Int32, `received_user_count` Int32, `success_message_id` String, `recall_status` Int8 DEFAULT 0, `created_at` Nullable(String), `updated_at` Nullable(String)

@@ -1,0 +1,9 @@
+add&^*=platform_message_logs&^*=id
+
+update&^*=honor_awards&^*=is_revoked&^*=scene&^*=是否撤回
+
+update&^*=honor_awards&^*=revoked_by&^*=is_revoked&^*=撤回操作人
+
+update&^*=ai_faq&^*=disk_node_id&^*=add_type&^*=关联文档ID
+
+update&^*=ai_faq&^*=is_audited&^*=disk_node_id&^*=是否为待审核问答对
