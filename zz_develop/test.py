@@ -18,4 +18,6 @@ SELECT_SQL_1 = '''
     where concat(`year`, `month`, `day`) = '{}' and join_type in('insert', 'update')
 '''.format(COLUMNS, dt)
 
-print(SELECT_SQL_1)
+aaa = 'asdsaf dfs_{}'.format(dt)
+
+print(aaa)

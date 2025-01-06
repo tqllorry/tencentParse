@@ -1,9 +1,7 @@
-add&^*=platform_message_logs&^*=id
+add&^*=perm_relationships&^*=id
 
-update&^*=honor_awards&^*=is_revoked&^*=scene&^*=是否撤回
+add&^*=perm_attributes&^*=id
 
-update&^*=honor_awards&^*=revoked_by&^*=is_revoked&^*=撤回操作人
+update&^*=learning_roadmaps&^*=enable_member_remind_immediately&^*=enable_manager_remind&^*=是否开启新加入项目立即提醒
 
-update&^*=ai_faq&^*=disk_node_id&^*=add_type&^*=关联文档ID
-
-update&^*=ai_faq&^*=is_audited&^*=disk_node_id&^*=是否为待审核问答对
+update&^*=learning_roadmaps&^*=new_member_remind_times&^*=enable_member_remind_immediately&^*=提醒新成员的时间

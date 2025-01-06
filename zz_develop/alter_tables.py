@@ -135,13 +135,13 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
                     last_table_name = table_name
 
                 # local语句
-                create_sql_local = 'CREATE TABLE lx.' + table_name + "_local on cluster default_cluster (" + create_sql + ", `SrcCDBID` String, `SrcDatabaseName` String, `_sign` Int8, `_version` UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{}".format(
+                create_sql_local = 'CREATE TABLE IF NOT EXISTS lx.' + table_name + "_local on cluster default_cluster (" + create_sql + ", `SrcCDBID` String, `SrcDatabaseName` String, `_sign` Int8, `_version` UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/{}".format(
                     table_name)
                 create_sql_local += "/{shard}', '{replica}', _version) ORDER BY (SrcCDBID, SrcDatabaseName, id) SETTINGS index_granularity = 8192;\n\n"
                 w.write(create_sql_local)
 
                 # 非local语句
-                create_sql = 'CREATE TABLE lx.' + table_name + " on cluster default_cluster (" + create_sql + ", `SrcCDBID` String, `SrcDatabaseName` String, `_sign` Int8, `_version` UInt64) ENGINE = Distributed('default_cluster', 'lx', '" + table_name + "_local', cityHash64(toString(tuple(id))));\n\n"
+                create_sql = 'CREATE TABLE IF NOT EXISTS lx.' + table_name + " on cluster default_cluster (" + create_sql + ", `SrcCDBID` String, `SrcDatabaseName` String, `_sign` Int8, `_version` UInt64) ENGINE = Distributed('default_cluster', 'lx', '" + table_name + "_local', cityHash64(toString(tuple(id))));\n\n"
                 w.write(create_sql)
 
             elif line.startswith('update'):
@@ -211,21 +211,21 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
             if comment:
                 comment = f"'{comment}'"
                 f.write(
-                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN `{column_name}` {column_types} COMMENT {comment} AFTER `{after_column}`;\n")
+                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} COMMENT {comment} AFTER `{after_column}`;\n")
                 f.write(
-                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN `{column_name}` {column_types} COMMENT {comment} AFTER `{after_column}`;\n\n")
+                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} COMMENT {comment} AFTER `{after_column}`;\n\n")
             else:
                 f.write(
-                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN `{column_name}` {column_types} AFTER `{after_column}`;\n")
+                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} AFTER `{after_column}`;\n")
                 f.write(
-                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN `{column_name}` {column_types} AFTER `{after_column}`;\n\n")
+                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} AFTER `{after_column}`;\n\n")
 
     with open(output_file_path1, 'r') as f:
         lines = f.readlines()
 
     with open(output_file_path1, 'w') as f:
         for line in lines:
-            if line.startswith('CREATE TABLE'):
+            if line.startswith('CREATE TABLE IF NOT EXISTS'):
                 line = line.replace(') SETTINGS ', ')\nSETTINGS ').replace(') ORDER BY (', ')\nORDER BY (').replace(
                     ') ENGINE = ', '\n)\nENGINE = ').replace('on cluster default_cluster (',
                                                              'on cluster default_cluster (\n    ').replace(', `',
@@ -261,7 +261,7 @@ if __name__ == "__main__":
     # 再次执行此脚本，生成output_sql_final.sql
     # 检查MySQL测试库中 新建表 的字段，补充默认值和备注
     # 再次执行此脚本，生成output_sql_final_shell.sql
-    mysql_db_name = '74b570288f7611ef88e5a2fd79ed158a'
+    mysql_db_name = 'cfb4e750c65911efbd257e2579a8d90c'
     ck_db_name = 'swan_85535ed0c66311e5a2f8bf5011933e87'
 
     run(mysql_db_name, ck_db_name)

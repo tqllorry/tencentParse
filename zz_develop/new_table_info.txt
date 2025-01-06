@@ -1,11 +1,8 @@
--- 【DB变更审核】
-
--- 时间：20241021
+-- 时间：20241230
 
 -- 公司库：
--- platform_message_logs[新建表]
--- honor_awards[新增字段 is_revoked, revoked_by]
--- ai_faq[新增字段 disk_node_id, is_audited]
+-- perm_relationships[新建表]
+-- perm_attributes[新建表]
+-- learning_roadmaps[新增字段 enable_member_remind_immediately, new_member_remind_times]
 
 -- 有无高风险操作：无
---  -- @todaychen(陈勇基) @lorrytang(唐启亮)
