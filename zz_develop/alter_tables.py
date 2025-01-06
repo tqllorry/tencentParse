@@ -27,7 +27,8 @@ def generate_alter_table_shell_file(mysql_result_path1, output_file_path1, outpu
                 line = line.replace('    `', '`').replace('\n', '')
 
             line = line.replace('on cluster default_cluster (\n', 'on cluster default_cluster (') \
-                .replace('\'{replica}\', _version)\n', '\'{replica}\', _version) ')
+                .replace('\'{replica}\', _version)\n', '\'{replica}\', _version) ') \
+                .replace('DEFAULT \\\'\\\'', 'DEFAULT \'\'')
 
             for primary_key in primary_keys:
                 line = line.replace('ORDER BY (SrcCDBID, SrcDatabaseName, {})\n'.format(primary_key),

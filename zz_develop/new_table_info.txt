@@ -1,8 +1,12 @@
 -- 【DB变更审核】
---
--- 时间：20230828
---
+
+-- 时间：20241223
+
 -- 公司库：
--- learning_roadmap_tag_staff[新建表]
--- content_selections[新建表]
--- documents[新增字段 enable_select]
+-- kb_spaces[新建表]
+-- kb_entries[新建表]
+-- kb_files[新建表]
+-- kb_file_revisions[新建表]
+
+-- 有无高风险操作：无
+--  @todaychen(陈勇基) @lorrytang(唐启亮) @yihuachen(陈艺华)

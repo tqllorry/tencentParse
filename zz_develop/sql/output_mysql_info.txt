@@ -1,5 +1,7 @@
-add&^*=learning_roadmap_tag_staff&^*=id
+add&^*=kb_spaces&^*=incr_id
 
-add&^*=content_selections&^*=incr_id
+add&^*=kb_entries&^*=incr_id
 
-update&^*=documents&^*=enable_select&^*=enable_copy_limit&^*=是否开启划词
+add&^*=kb_files&^*=incr_id
+
+add&^*=kb_file_revisions&^*=incr_id
