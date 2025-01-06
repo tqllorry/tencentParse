@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
-def generate_alter_table_shell_file(output_file_path1, output_shell_file_path1):
+def generate_alter_table_shell_file(mysql_result_path1, output_file_path1, output_shell_file_path1):
+    primary_keys = []
+
+    # 读取output_mysql_info.txt文件
+    with open(mysql_result_path1, 'r') as f:
+        mysql_lines = f.readlines()
+
+    for line in mysql_lines:
+
+        if line.startswith('add'):
+            if len(line.strip().split('&^*=')) < 3:
+                error_info = "！！！！！{}表没有主键！！！！！".format(line.strip().split('&^*=')[1])
+                raise ValueError(error_info)
+            else:
+                primary_keys.append(line.strip().split('&^*=')[2].strip())
+
     with open(output_file_path1, 'r') as f:
         lines = f.readlines()
 
@@ -11,9 +26,12 @@ def generate_alter_table_shell_file(output_file_path1, output_shell_file_path1):
             if line.startswith('    `'):
                 line = line.replace('    `', '`').replace('\n', '')
 
-            line = line.replace('on cluster default_cluster (\n', 'on cluster default_cluster (').replace(
-                '\'{replica}\', _version)\n', '\'{replica}\', _version) ').replace(
-                'ORDER BY (SrcCDBID, SrcDatabaseName, id)\n', 'ORDER BY (SrcCDBID, SrcDatabaseName, id) ')
+            line = line.replace('on cluster default_cluster (\n', 'on cluster default_cluster (') \
+                .replace('\'{replica}\', _version)\n', '\'{replica}\', _version) ')
+
+            for primary_key in primary_keys:
+                line = line.replace('ORDER BY (SrcCDBID, SrcDatabaseName, {})\n'.format(primary_key),
+                                    'ORDER BY (SrcCDBID, SrcDatabaseName, {}) '.format(primary_key))
 
             f.write(line)
 
@@ -165,22 +183,21 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
     for line in mysql_lines:
 
         if line.startswith('add'):
-            if len(line.strip().split('&^*=')) < 3:
-                error_info = "！！！！！{}表没有主键！！！！！".format(line.strip().split('&^*=')[1])
-                raise ValueError(error_info)
-            else:
-                dml_type, table_name, column_key = line.strip().split('&^*=')
+            dml_type, table_name, primary_key = line.strip().split('&^*=')
 
-                with open(output_file_path1, 'r') as temp_f:
-                    temp_lines = temp_f.readlines()
+            with open(output_file_path1, 'r') as temp_f:
+                temp_lines = temp_f.readlines()
 
-                with open(output_file_path1, 'w') as temp_f:
-                    for temp_line in temp_lines:
-                        temp_fields = temp_line.strip().split(' ')
-                        if len(temp_fields) >= 3 and temp_fields[2].replace('lx.', '') == table_name:
-                            sharding_key = "cityHash64(toString(tuple({})))".format(column_key)
-                            temp_line = temp_line.replace('cityHash64(toString(tuple(id)))', sharding_key)
-                        temp_f.write(temp_line)
+            with open(output_file_path1, 'w') as temp_f:
+                for temp_line in temp_lines:
+                    temp_fields = temp_line.strip().split(' ')
+                    if len(temp_fields) >= 6 and temp_fields[5].replace('lx.', '').removesuffix(
+                            "_local") == table_name:
+                        sharding_key_1 = "cityHash64(toString(tuple({})))".format(primary_key)
+                        sharding_key_2 = "(SrcCDBID, SrcDatabaseName, {})".format(primary_key)
+                        temp_line = temp_line.replace('cityHash64(toString(tuple(id)))', sharding_key_1).replace(
+                            '(SrcCDBID, SrcDatabaseName, id)', sharding_key_2)
+                    temp_f.write(temp_line)
 
         elif line.startswith('update'):
             dml_type, table_name, column_name, after_column, comment = line.strip().split('&^*=')
@@ -226,10 +243,11 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
     with open(output_file_path1, 'w') as f:
         for line in lines:
             if line.startswith('CREATE TABLE IF NOT EXISTS'):
-                line = line.replace(') SETTINGS ', ')\nSETTINGS ').replace(') ORDER BY (', ')\nORDER BY (').replace(
-                    ') ENGINE = ', '\n)\nENGINE = ').replace('on cluster default_cluster (',
-                                                             'on cluster default_cluster (\n    ').replace(', `',
-                                                                                                           ',\n    `')
+                line = line.replace(') SETTINGS ', ')\nSETTINGS ') \
+                    .replace(') ORDER BY (', ')\nORDER BY (') \
+                    .replace(') ENGINE = ', '\n)\nENGINE = ') \
+                    .replace('on cluster default_cluster (', 'on cluster default_cluster (\n    ') \
+                    .replace(', `', ',\n    `')
             f.write(line)
 
 
@@ -245,7 +263,7 @@ def run(mysql_db_name1, ck_db_name1):
     output_file_path = "results/output_sql_final.sql"
     output_shell_file_path = "results/output_sql_final_shell.sql"
 
-    generate_alter_table_shell_file(output_file_path, output_shell_file_path)
+    generate_alter_table_shell_file(mysql_result_path, output_file_path, output_shell_file_path)
     generate_select_mysql(file_path, select_mysql_file_path, mysql_db_name1)
     generate_select_ck(file_path, select_ck_file_path, ck_db_name1)
     generate_alter_table_statement(mysql_result_path, ck_result_path, 'results/output_sql_final_bak.sql')

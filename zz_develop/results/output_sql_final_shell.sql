@@ -1,20 +1,17 @@
 
--- perm_attributes
-CREATE TABLE lx.perm_attributes_local on cluster default_cluster (`id` UInt64,`entity_type` String,`entity_id` String,`name` String,`type` String,`value` String,`created_by` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/perm_attributes/{shard}', '{replica}', _version) ORDER BY (SrcCDBID, SrcDatabaseName, id) SETTINGS index_granularity = 8192;
+-- learning_roadmap_tag_staff
+CREATE TABLE IF NOT EXISTS lx.learning_roadmap_tag_staff_local on cluster default_cluster (`id` UInt64,`tag_id` String,`staff_id` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/learning_roadmap_tag_staff/{shard}', '{replica}', _version) ORDER BY (SrcCDBID, SrcDatabaseName, id) SETTINGS index_granularity = 8192;
 
-CREATE TABLE lx.perm_attributes on cluster default_cluster (`id` UInt64,`entity_type` String,`entity_id` String,`name` String,`type` String,`value` String,`created_by` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = Distributed('default_cluster', 'lx', 'perm_attributes_local', cityHash64(toString(tuple(id))));
-
-
--- perm_relationships
-CREATE TABLE lx.perm_relationships_local on cluster default_cluster (`id` UInt64,`entity_type` String,`entity_id` String,`relation` String,`subject_type` String,`subject_id` String,`subject_relation` String,`created_by` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/perm_relationships/{shard}', '{replica}', _version) ORDER BY (SrcCDBID, SrcDatabaseName, id) SETTINGS index_granularity = 8192;
-
-CREATE TABLE lx.perm_relationships on cluster default_cluster (`id` UInt64,`entity_type` String,`entity_id` String,`relation` String,`subject_type` String,`subject_id` String,`subject_relation` String,`created_by` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = Distributed('default_cluster', 'lx', 'perm_relationships_local', cityHash64(toString(tuple(id))));
+CREATE TABLE IF NOT EXISTS lx.learning_roadmap_tag_staff on cluster default_cluster (`id` UInt64,`tag_id` String,`staff_id` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = Distributed('default_cluster', 'lx', 'learning_roadmap_tag_staff_local', cityHash64(toString(tuple(id))));
 
 
--- learning_roadmaps
-ALTER TABLE lx.learning_roadmaps_local on cluster default_cluster ADD COLUMN `enable_member_remind_immediately` Int8 DEFAULT 0 COMMENT '是否开启新加入项目立即提醒' AFTER `enable_manager_remind`;
-ALTER TABLE lx.learning_roadmaps on cluster default_cluster ADD COLUMN `enable_member_remind_immediately` Int8 DEFAULT 0 COMMENT '是否开启新加入项目立即提醒' AFTER `enable_manager_remind`;
+-- content_selections
+CREATE TABLE IF NOT EXISTS lx.content_selections_local on cluster default_cluster (`incr_id` UInt64,`id` String,`target_type` String,`target_id` String,`comment_id` String,`selection` String,`selection_md5` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = ReplicatedReplacingMergeTree('/clickhouse/tables/content_selections/{shard}', '{replica}', _version) ORDER BY (SrcCDBID, SrcDatabaseName, incr_id) SETTINGS index_granularity = 8192;
 
-ALTER TABLE lx.learning_roadmaps_local on cluster default_cluster ADD COLUMN `new_member_remind_times` String DEFAULT '' COMMENT '提醒新成员的时间' AFTER `enable_member_remind_immediately`;
-ALTER TABLE lx.learning_roadmaps on cluster default_cluster ADD COLUMN `new_member_remind_times` String DEFAULT '' COMMENT '提醒新成员的时间' AFTER `enable_member_remind_immediately`;
+CREATE TABLE IF NOT EXISTS lx.content_selections on cluster default_cluster (`incr_id` UInt64,`id` String,`target_type` String,`target_id` String,`comment_id` String,`selection` String,`selection_md5` String,`created_at` Nullable(String),`updated_at` Nullable(String),`SrcCDBID` String,`SrcDatabaseName` String,`_sign` Int8,`_version` UInt64) ENGINE = Distributed('default_cluster', 'lx', 'content_selections_local', cityHash64(toString(tuple(incr_id))));
+
+
+-- documents
+ALTER TABLE lx.documents_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `enable_select` Int8 COMMENT '是否开启划词' AFTER `enable_copy_limit`;
+ALTER TABLE lx.documents on cluster default_cluster ADD COLUMN IF NOT EXISTS `enable_select` Int8 COMMENT '是否开启划词' AFTER `enable_copy_limit`;
 

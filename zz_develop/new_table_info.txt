@@ -1,8 +1,8 @@
--- 时间：20241230
-
+-- 【DB变更审核】
+--
+-- 时间：20230828
+--
 -- 公司库：
--- perm_relationships[新建表]
--- perm_attributes[新建表]
--- learning_roadmaps[新增字段 enable_member_remind_immediately, new_member_remind_times]
-
--- 有无高风险操作：无
+-- learning_roadmap_tag_staff[新建表]
+-- content_selections[新建表]
+-- documents[新增字段 enable_select]

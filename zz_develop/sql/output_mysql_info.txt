@@ -1,7 +1,5 @@
-add&^*=perm_relationships&^*=id
+add&^*=learning_roadmap_tag_staff&^*=id
 
-add&^*=perm_attributes&^*=id
+add&^*=content_selections&^*=incr_id
 
-update&^*=learning_roadmaps&^*=enable_member_remind_immediately&^*=enable_manager_remind&^*=是否开启新加入项目立即提醒
-
-update&^*=learning_roadmaps&^*=new_member_remind_times&^*=enable_member_remind_immediately&^*=提醒新成员的时间
+update&^*=documents&^*=enable_select&^*=enable_copy_limit&^*=是否开启划词
