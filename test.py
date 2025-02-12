@@ -5,103 +5,64 @@ import sys
 import os
 import time
 import argparse
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+database = 'lx'
 
-parser = argparse.ArgumentParser(description='ck_to_hive')
-parser.add_argument('--ck_database', '-cd', help='必要参数', required=True)
-parser.add_argument('--ck_list_path', '-path', help='必要参数', required=True)
-parser.add_argument('--tdsqlhid', '-tdsqlhid', help='必要参数', required=True)
-parser.add_argument('--cdbid', '-cdbid', help='必要参数', required=True)
-parser.add_argument('--manually_table_path', '-manually_table_path', help='必要参数', required=True)
-args = parser.parse_args()
+manually_column = '`id`, `name`,`age`,SrcCDBID,`SrcDatabaseName`'
+manually_column = None
 
-database = args.ck_database
-ck_list_path = args.ck_list_path
-cdbid = args.cdbid
-manually_table_path = args.manually_table_path
-tdsqlhid = args.tdsqlhid
+table = 'staffs'
 
-with open(ck_list_path, 'r') as fp:
-    ck_config_list = json.load(fp)
-
-ck_config = [item for item in ck_config_list if str(item['tdsqlhid']) == tdsqlhid][0]
-
-# dt = time.strftime("%Y%m%d", time.localtime())
 dt = (date.today() + timedelta(days=-1)).strftime("%Y%m%d")
 
-# 导出
-export_sql1 = "show tables"
-print(export_sql1)
+where = '1=1'
 
-tsv_path = "/data/tdbank/{}/{}/{}.tsv.all".format(database, manually_table_path, dt)
-if os.path.exists(tsv_path):
-    os.remove(tsv_path)
+ck_fields = 'id, name,age, `SrcCDBID`,SrcDatabaseName'
 
-temp_tsv_path = "/data/tdbank/{}/{}/sql_{}.tsv.all".format(database, manually_table_path, dt)
-if os.path.exists(temp_tsv_path):
-    os.remove(temp_tsv_path)
+field_list = []
+final_field_list = ''
+fields = ck_fields.replace('`', '').split(',')
 
-dir_history_path = "/data/tdbank/{}/{}/*".format(database, manually_table_path)
-if os.path.exists(dir_history_path):
-    os.remove(dir_history_path)
+manually_table_path = None
 
-# 没有目录就新建
+# 如果没指定导出路径，默认为table名
+if not manually_table_path:
+    manually_table_path = table
+
 dir_path = "/data/tdbank/{}/{}".format(database, manually_table_path)
-if not os.path.exists(dir_path):
-    os.makedirs(dir_path)
-    os.chmod(dir_path, 0777)
+tsv_path = "{}/{}.tsv.all".format(dir_path, dt)
+temp_tsv_path = "{}/temp_{}.tsv.all".format(dir_path, dt)
 
-export_cmd = "clickhouse-client --port {} -h {} --user {} --password {} -d {} --query \"{}\" >>{}".format(
-    ck_config['ck_port'], ck_config['ck_host'], ck_config['ck_user'], ck_config['ck_password'], database, export_sql1,
-    temp_tsv_path)
-print(export_cmd)
-(status, output) = commands.getstatusoutput(export_cmd)
-print(status)
-print(output)
-if status:
-    print("ck导出失败：{}".format(temp_tsv_path))
-    sys.exit(1)
-print("ck导出成功: {}.{}".format(temp_tsv_path, ck_config['tdsqlhid']))
-print(time.strftime("%H:%M:%S"))
+awk_command = "awk \'length($0) <= 467968\' {} > {}".format(temp_tsv_path, tsv_path)
 
-with open(temp_tsv_path, 'r') as f:
-    lines = f.readlines()
-    result = []
-    for line in lines:
-        line = line.strip()
-        if not line.endswith('_local'):
-            line = 'select concat(\'' + line + ',\',toString(count(1))) from ' + line + ' where _sign=1 and SrcCDBID=\'{}\' union all'.format(
-                cdbid)
-            result.append(line)
-with open(temp_tsv_path, 'w') as f:
-    f.write('\n'.join(result))
+print(awk_command)
 
-with open(temp_tsv_path, 'a') as f:
-    f.write('\nselect \'null,0\'')
+if not manually_column:
+    for field in fields:
+        field_list.append("`{}`".format(field.strip()))
+    print(field_list)
+    final_field_list = ','.join(field_list).replace('`', '\\`')
+else:
+    final_field_list = manually_column.replace('`', '\\`')
+    print("自定义字段：{}".format(final_field_list))
 
-export_cmd = "clickhouse-client --port {} -h {} --user {} --password {} -d {} < {} >>{}".format(
-    ck_config['ck_port'], ck_config['ck_host'], ck_config['ck_user'], ck_config['ck_password'], database, temp_tsv_path,
-    tsv_path)
+# 若输入的database等于lx，则导出两个库数据
+if database == 'lx':
+    loop_list = ['lx', 'lx_yz_others']
+else:
+    loop_list = [None]
 
-print(export_cmd)
-(status, output) = commands.getstatusoutput(export_cmd)
-print(status)
-print(output)
-if status:
-    print("ck导出失败：{}".format(tsv_path))
-    sys.exit(1)
-print("ck导出成功: {}.{}".format(tsv_path, ck_config['tdsqlhid']))
-print(time.strftime("%H:%M:%S"))
+for db in loop_list:
+    if db == 'lx':
+        export_sql = "select {} from lx.{} final where _sign=1 and {}".format(final_field_list, table, where)
+    elif db == 'lx_yz_others':
+        export_sql = "select {} from lx_yz_others.{} final where _sign=1 and {}".format(
+            final_field_list.replace('\\`SrcCDBID\\`', '\'cdb-rlmkue91\'')
+            .replace('SrcCDBID', '\'cdb-rlmkue91\'')
+            .replace('SrcDatabaseName', '_srcDatabaseName'), table, where)
+    else:
+        export_sql = "select {} from {}.{} final where _sign=1 and {}".format(
+            final_field_list.replace('`', '\\`'), database, table, where)
 
-with open(tsv_path, 'r') as f:
-    lines = f.readlines()
-    result = []
-    for line in lines:
-        table_name, count = line.strip().split(',')
-        if int(count) > 0:
-            result.append(line.strip())
-with open(tsv_path, 'w') as f:
-    f.write('\n'.join(result))
+    print(export_sql)

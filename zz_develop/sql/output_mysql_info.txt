@@ -1,7 +1,1 @@
-add&^*=kb_spaces&^*=incr_id
-
-add&^*=kb_entries&^*=incr_id
-
-add&^*=kb_files&^*=incr_id
-
-add&^*=kb_file_revisions&^*=incr_id
+update&^*=learning_roadmaps&^*=manager_remind_config&^*=enable_manager_remind&^*=项目负责人通知规则

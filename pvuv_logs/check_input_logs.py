@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 
-from openapi_logs.check_input_output_json import cleaned_df
+# from openapi_logs.check_input_output_json import cleaned_df
+
 
 # 创建SparkSession
 spark = (SparkSession.builder.appName("JsonParsingApp").master("local[*]")
@@ -9,7 +10,8 @@ spark = (SparkSession.builder.appName("JsonParsingApp").master("local[*]")
          .getOrCreate())
 
 # 读取本地文件
-input_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/202410/test1001"
+# input_path = "file:///Users/tangqiliang/Documents/files/pvuv_logs/202410/test1001"
+input_path = "file:///Users/tangqiliang/Documents/工作/files/搜索日志/20250116/input"
 df = spark.read.json(input_path)
 
 df.createOrReplaceTempView("my_json")
@@ -27,7 +29,7 @@ df.createOrReplaceTempView("my_json")
 # """)
 
 cleaned_df = spark.sql("""
-    select distinct request
+    select distinct http_request_uri
     -- request,parse_url(concat('http://', request), 'QUERY', 'company_id') company_id
     from my_json
 """)

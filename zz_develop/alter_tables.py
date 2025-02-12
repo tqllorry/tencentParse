@@ -280,7 +280,7 @@ if __name__ == "__main__":
     # 再次执行此脚本，生成output_sql_final.sql
     # 检查MySQL测试库中 新建表 的字段，补充默认值和备注
     # 再次执行此脚本，生成output_sql_final_shell.sql
-    mysql_db_name = 'cfb4e750c65911efbd257e2579a8d90c'
+    mysql_db_name = '1168e4c6e75711efaea61ea75098e1da'
     ck_db_name = 'swan_85535ed0c66311e5a2f8bf5011933e87'
 
     run(mysql_db_name, ck_db_name)

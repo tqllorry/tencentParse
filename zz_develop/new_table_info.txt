@@ -1,12 +1,7 @@
 -- 【DB变更审核】
 
--- 时间：20241223
+-- 时间：20250210
 
 -- 公司库：
--- kb_spaces[新建表]
--- kb_entries[新建表]
--- kb_files[新建表]
--- kb_file_revisions[新建表]
+-- learning_roadmaps[新增字段 manager_remind_config]
 
--- 有无高风险操作：无
---  @todaychen(陈勇基) @lorrytang(唐启亮) @yihuachen(陈艺华)
