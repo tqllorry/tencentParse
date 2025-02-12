@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import argparse
+import subprocess
 from datetime import date, timedelta
 
 reload(sys)
@@ -37,12 +38,19 @@ if not where:
 if not manually_table_path:
     manually_table_path = table
 
-fields = ck_fields.split(',')
-
+# 获取导出字段（manually_ck_list为自定义字段列表，如给某字段添加函数操作）
 field_list = []
-for field in fields:
-    field_list.append("`{}`".format(field))
-print(field_list)
+final_field_list = ''
+fields = ck_fields.replace('`', '').split(',')
+
+if not manually_column:
+    for field in fields:
+        field_list.append("`{}`".format(field.strip()))
+    print(field_list)
+    final_field_list = ','.join(field_list).replace('`', '\\`')
+else:
+    final_field_list = manually_column.replace('`', '\\`')
+    print("自定义字段：{}".format(final_field_list))
 
 with open(ck_list_path, 'r') as fp:
     ck_config_list = json.load(fp)
@@ -59,13 +67,18 @@ dt = (date.today() + timedelta(days=-1)).strftime("%Y%m%d")
 # 导出
 print(time.strftime("%H:%M:%S"))
 
-tsv_path = "/data/tdbank/{}/{}/{}.tsv.all".format(database, manually_table_path, dt)
-if os.path.exists(tsv_path):
-    os.remove(tsv_path)
+dir_path = "/data/tdbank/{}/{}".format(database, manually_table_path)
+tsv_path = "{}/{}.tsv.all".format(dir_path, dt)
+temp_tsv_path = "{}/temp_{}.tsv.all".format(dir_path, dt)
 
-temp_tsv_path = "/data/tdbank/{}/{}/temp_{}.tsv.all".format(database, manually_table_path, dt)
-if os.path.exists(temp_tsv_path):
-    os.remove(temp_tsv_path)
+if not os.path.exists(dir_path):
+    os.makedirs(dir_path)
+    os.chmod(dir_path, 0777)
+else:
+    if os.path.exists(tsv_path):
+        os.remove(tsv_path)
+    if os.path.exists(temp_tsv_path):
+        os.remove(temp_tsv_path)
 
 # 若输入的database等于lx，则导出两个库数据
 if database == 'lx':
@@ -75,40 +88,22 @@ else:
 
 for db in loop_list:
     for ck_config in ck_config_list:
-        if db == 'lx' and ck_config['index'] == -1:
-            continue
-        elif db == 'lx_yz_others' and ck_config['index'] != -1:
-            continue
-
-        dir_path = "/data/tdbank/{}/{}".format(database, manually_table_path)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-            os.chmod(dir_path, 0777)
-
-        if not manually_column:
-            if db == 'lx':
-                export_sql = "select {} from lx.{} final where _sign=1 and {}".format(
-                    ','.join(field_list).replace('`', '\\`'), table, where)
-            elif db == 'lx_yz_others':
-                export_sql = "select {} from lx_yz_others.{} final where _sign=1 and {}".format(
-                    ','.join(field_list).replace('`', '\\`').replace('\\`SrcCDBID\\`', '\'cdb-rlmkue91\'').replace(
-                        'SrcDatabaseName',
-                        '_srcDatabaseName'), table, where)
+        if db == 'lx':
+            if ck_config['index'] == -1:
+                continue
             else:
-                export_sql = "select {} from {}.{} final where _sign=1 and {}".format(
-                    ','.join(field_list).replace('`', '\\`'), database, table, where)
+                export_sql = "select {} from lx.{} final where _sign=1 and {}".format(final_field_list, table, where)
+        elif db == 'lx_yz_others':
+            if ck_config['index'] != -1:
+                continue
+            else:
+                export_sql = "select {} from lx_yz_others.{} final where _sign=1 and {}".format(
+                    final_field_list.replace('\\`SrcCDBID\\`', '\'cdb-rlmkue91\'')
+                    .replace('SrcCDBID', '\'cdb-rlmkue91\'')
+                    .replace('SrcDatabaseName', '_srcDatabaseName'), table, where)
         else:
-            print("自定义字段：{}".format(manually_column))
-            if db == 'lx':
-                export_sql = "select {} from lx.{} final where _sign=1 and {}".format(
-                    manually_column.replace('`', '\\`'), table, where)
-            elif db == 'lx_yz_others':
-                export_sql = "select {} from lx_yz_others.{} final where _sign=1 and {}".format(
-                    manually_column.replace('`', '\\`').replace('\\`SrcCDBID\\`', '\'cdb-rlmkue91\'').replace(
-                        'SrcCDBID', '\'cdb-rlmkue91\'').replace('SrcDatabaseName', '_srcDatabaseName'), table, where)
-            else:
-                export_sql = "select {} from {}.{} final where _sign=1 and {}".format(
-                    manually_column.replace('`', '\\`'), database, table, where)
+            export_sql = "select {} from {}.{} final where _sign=1 and {}".format(final_field_list, database, table,
+                                                                                  where)
         print(export_sql)
 
         export_cmd = "clickhouse-client --port {} -h {} --user {} --password {} --query \"{} SETTINGS max_threads=2,max_block_size=1000 \" >>{}".format(
@@ -124,4 +119,12 @@ for db in loop_list:
         print("ck导出成功: {}.{}".format(temp_tsv_path, ck_config['index']))
         print(time.strftime("%H:%M:%S"))
 
-os.rename(temp_tsv_path, tsv_path)
+if os.path.exists(temp_tsv_path):
+    if table == 'ai_histories':
+        awk_command = "awk \'length($0) <= 467968\' {} > {} && rm -rf {}".format(temp_tsv_path, tsv_path, temp_tsv_path)
+        if subprocess.call(awk_command, shell=True) == 0:
+            print("已处理文件 {}，并将结果写入 {}。".format(temp_tsv_path, tsv_path))
+        else:
+            print("执行 awk 命令时出错。")
+    else:
+        os.rename(temp_tsv_path, tsv_path)
