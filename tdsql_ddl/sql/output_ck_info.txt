@@ -1,0 +1,9 @@
+update&^*=ai_knowledge&^*=extra&^*=Nullable(String)
+update&^*=ai_knowledge_point_tasks&^*=original_snapshot&^*=Nullable(String)
+update&^*=exam_events&^*=quote_type&^*=String DEFAULT \'quote\'
+update&^*=exam_papers&^*=is_hidden&^*=Int8 DEFAULT 0
+update&^*=exam_questions&^*=release_question_lib_id&^*=Nullable(String)
+update&^*=kb_entry_contents&^*=ai_summary&^*=Nullable(String)
+update&^*=news&^*=source&^*=String DEFAULT \'\'
+add&^*=kb_template_usages&^*=`incr_id` UInt64, `id` String, `space_id` String, `template_id` String, `entry_id` String, `created_by` String, `created_at` Nullable(String)
+add&^*=kb_templates&^*=`incr_id` UInt64, `id` String, `space_id` String, `name` String, `cover` String, `type` String, `target_type` String, `target_id` String, `status` Int8, `created_by` String, `updated_by` String, `owned_by` String, `deleted_at` UInt64, `created_at` Nullable(String), `updated_at` Nullable(String)

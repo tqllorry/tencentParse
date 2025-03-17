@@ -1,68 +1,52 @@
-# coding=utf-8
-import json
-import commands
-import sys
-import os
-import time
-import argparse
-from datetime import date, timedelta
+# coding:utf-8
+"""
+PythonSQL Demo
+Python Version 2.7
+Python Doc https://docs.python.org/2.7/contents.html
+"""
 
-database = 'lx'
+import re
+from datetime import datetime, date, timedelta
 
-manually_column = '`id`, `name`,`age`,SrcCDBID,`SrcDatabaseName`'
-manually_column = None
 
-table = 'staffs'
+def TDW_PL(tdw, argv):
+    tdw.WriteLog('PythonSQL start')
 
-dt = (date.today() + timedelta(days=-1)).strftime("%Y%m%d")
+    query = 'select database_name, table_name, safe_partition_days from lx_saas.dim_lx_table_save_partition_info'
+    tdw.WriteLog('sql=%s' % query)
+    res = tdw.execute(query)
+    tdw.WriteLog(res)
 
-where = '1=1'
+    for row in res:
+        fields = row.split('\t')
+        if len(fields) != 3:
+            tdw.WriteLog('Error: Expected 3 columns, got %d: %s' % (len(fields), str(row)))
+            continue
 
-ck_fields = 'id, name,age, `SrcCDBID`,SrcDatabaseName'
+        database_name, table_name, safe_partition_days = fields
 
-field_list = []
-final_field_list = ''
-fields = ck_fields.replace('`', '').split(',')
+        safe_partition_days = int(safe_partition_days)
 
-manually_table_path = None
+        delete_date = datetime.now() - timedelta(days=safe_partition_days)
+        # 获取年、月、日
+        dt_year = delete_date.strftime('%Y')
+        dt_month = delete_date.strftime('%m')
+        dt_day = delete_date.strftime('%d')
+        # 构造删除分区的SQL语句
+        drop_partition_query = (
+                "ALTER TABLE %s.%s DROP IF EXISTS PARTITION (year='%s', month='%s', day='%s')"
+                % (database_name, table_name, dt_year, dt_month, dt_day)
+        )
 
-# 如果没指定导出路径，默认为table名
-if not manually_table_path:
-    manually_table_path = table
+        # 写入日志
+        tdw.WriteLog('sql=%s' % drop_partition_query)
 
-dir_path = "/data/tdbank/{}/{}".format(database, manually_table_path)
-tsv_path = "{}/{}.tsv.all".format(dir_path, dt)
-temp_tsv_path = "{}/temp_{}.tsv.all".format(dir_path, dt)
+        # 执行删除分区操作
+        # try:
+        #     res = tdw.execute(drop_partition_query)
+        #     tdw.WriteLog(res)
+        #     tdw.WriteLog("Deleted partition from %s.%s for date %s" % (database_name, table_name, delete_date_str))
+        # except Exception as e:
+        #     tdw.WriteLog("Error deleting partition from %s.%s: %s" % (database_name, table_name, str(e)))
 
-awk_command = "awk \'length($0) <= 467968\' {} > {}".format(temp_tsv_path, tsv_path)
-
-print(awk_command)
-
-if not manually_column:
-    for field in fields:
-        field_list.append("`{}`".format(field.strip()))
-    print(field_list)
-    final_field_list = ','.join(field_list).replace('`', '\\`')
-else:
-    final_field_list = manually_column.replace('`', '\\`')
-    print("自定义字段：{}".format(final_field_list))
-
-# 若输入的database等于lx，则导出两个库数据
-if database == 'lx':
-    loop_list = ['lx', 'lx_yz_others']
-else:
-    loop_list = [None]
-
-for db in loop_list:
-    if db == 'lx':
-        export_sql = "select {} from lx.{} final where _sign=1 and {}".format(final_field_list, table, where)
-    elif db == 'lx_yz_others':
-        export_sql = "select {} from lx_yz_others.{} final where _sign=1 and {}".format(
-            final_field_list.replace('\\`SrcCDBID\\`', '\'cdb-rlmkue91\'')
-            .replace('SrcCDBID', '\'cdb-rlmkue91\'')
-            .replace('SrcDatabaseName', '_srcDatabaseName'), table, where)
-    else:
-        export_sql = "select {} from {}.{} final where _sign=1 and {}".format(
-            final_field_list.replace('`', '\\`'), database, table, where)
-
-    print(export_sql)
+    tdw.WriteLog('PythonSQL end')

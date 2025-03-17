@@ -1,1 +1,0 @@
-clickhouse-client --host 10.26.49.20 --port 9000 --user etl --password SmceVqeCuUCQ4el2 -d swan_85535ed0c66311e5a2f8bf5011933e87 --query "select '' union all SELECT concat('update&^*=',table,'&^*=',name,'&^*=',concat(type,' ',default_kind,' ',default_expression)) FROM system.columns WHERE (table = 'learning_roadmaps' AND name in('manager_remind_config'));"

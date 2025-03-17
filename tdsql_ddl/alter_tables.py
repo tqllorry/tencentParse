@@ -118,8 +118,8 @@ def generate_select_ck(file_path1, output_file_path1, db_name1):
 
     # 将多个SQL语句拼接成一个大的SQL语句
     if update_sql_list:
-        update_big_sql = "SELECT concat('update&^*=',table,'&^*=',name,'&^*=',concat(type,' ',default_kind,' ',default_expression)) FROM system.columns WHERE " + ' or'.join(
-            update_sql_list) + ';'
+        update_big_sql = "SELECT concat('update&^*=',table,'&^*=',name,'&^*=',concat(type,' ',default_kind,' ',default_expression)) FROM system.columns WHERE database='{}' and (".format(ck_db_name) + ' or'.join(
+            update_sql_list) + ');'
     else:
         update_big_sql = "select ''"
 
@@ -253,7 +253,7 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
 
 
 def run(mysql_db_name1, ck_db_name1):
-    file_path = "new_table_info.txt"
+    file_path = "new_table_info.sql"
 
     select_mysql_file_path = "sql/select_mysql.sql"
     select_ck_file_path = "sql/select_ck.sh"
@@ -273,14 +273,14 @@ def run(mysql_db_name1, ck_db_name1):
 
 if __name__ == "__main__":
     # 将新生成的库名替换到db_name，登录至今日新生成的测试库
-    # 将tony老师整理的sql变更中的alter部分复制到new_table_info.txt，检查格式
+    # 将tony老师整理的sql变更中的alter部分复制到new_table_info.sql，检查格式
     # 执行本脚本
     # 将select_mysql.sql中的语句复制到新生成的库中执行，将结果覆盖output_mysql_info.txt
     # 将select_ck.sh中的语句复制到CK服务器中执行，将结果覆盖output_ck_info.txt
     # 再次执行此脚本，生成output_sql_final.sql
     # 检查MySQL测试库中 新建表 的字段，补充默认值和备注
     # 再次执行此脚本，生成output_sql_final_shell.sql
-    mysql_db_name = '1168e4c6e75711efaea61ea75098e1da'
+    mysql_db_name = 'e51dd52002fe11f08e23ba62037e8f31'
     ck_db_name = 'swan_85535ed0c66311e5a2f8bf5011933e87'
 
     run(mysql_db_name, ck_db_name)

@@ -1,0 +1,17 @@
+update&^*=exam_questions&^*=release_question_lib_id&^*=question_lib_id&^*=考试发布时加入的题库id
+
+update&^*=exam_papers&^*=is_hidden&^*=extra_content&^*=是否在试卷库显示:0显示，1隐藏
+
+update&^*=exam_events&^*=quote_type&^*=type&^*=考卷引用类型:quote引用，non_quote非引用
+
+add&^*=kb_templates&^*=incr_id
+
+add&^*=kb_template_usages&^*=incr_id
+
+update&^*=ai_knowledge_point_tasks&^*=original_snapshot&^*=status&^*=原始知识点快照
+
+update&^*=kb_entry_contents&^*=ai_summary&^*=summary&^*=AI摘要
+
+update&^*=ai_knowledge&^*=extra&^*=import_type&^*=额外字段信息
+
+update&^*=news&^*=source&^*=created_by&^*=
