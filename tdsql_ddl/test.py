@@ -21,3 +21,4 @@ SELECT_SQL_1 = '''
 aaa = 'asdsaf dfs_{}'.format(dt)
 
 print(aaa)
+

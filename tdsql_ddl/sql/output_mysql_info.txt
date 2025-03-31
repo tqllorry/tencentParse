@@ -1,17 +1,19 @@
-update&^*=exam_questions&^*=release_question_lib_id&^*=question_lib_id&^*=考试发布时加入的题库id
+add&^*=kb_permission_applications&^*=incr_id
 
-update&^*=exam_papers&^*=is_hidden&^*=extra_content&^*=是否在试卷库显示:0显示，1隐藏
+add&^*=kb_permission_approvals&^*=incr_id
 
-update&^*=exam_events&^*=quote_type&^*=type&^*=考卷引用类型:quote引用，non_quote非引用
+add&^*=ud_field_values&^*=incr_id
 
-add&^*=kb_templates&^*=incr_id
+update&^*=kb_entries&^*=status&^*=entry_type&^*=entry解析状态
 
-add&^*=kb_template_usages&^*=incr_id
+update&^*=kb_files&^*=status&^*=revision_id&^*=file解析状态
 
-update&^*=ai_knowledge_point_tasks&^*=original_snapshot&^*=status&^*=原始知识点快照
+update&^*=kb_file_revisions&^*=created_from&^*=reverted_from&^*=来源
 
-update&^*=kb_entry_contents&^*=ai_summary&^*=summary&^*=AI摘要
+update&^*=learning_roadmaps&^*=enable_board_remind&^*=new_member_remind_times&^*=是否开启学员直属上级看板提醒
 
-update&^*=ai_knowledge&^*=extra&^*=import_type&^*=额外字段信息
+update&^*=learning_roadmaps&^*=board_remind_start_time&^*=enable_board_remind&^*=开始提醒时间
 
-update&^*=news&^*=source&^*=created_by&^*=
+update&^*=learning_roadmaps&^*=board_remind_end_time&^*=board_remind_start_time&^*=结束提醒时间
+
+update&^*=learning_roadmaps&^*=board_remind_times&^*=board_remind_end_time&^*=上级看板提醒时间段

@@ -8,7 +8,7 @@ spark = (SparkSession.builder.appName("JsonParsingApp").master("local[*]")
 
 # 读取本地文件
 # input_path = "file:///Users/tangqiliang/Documents/工作/files/pvuv_logs/202412/input"
-input_path = "file:///Users/tangqiliang/Documents/工作/files/搜索日志/20250116/input"
+input_path = "file:///Users/tangqiliang/Documents/工作/files/pvuv_logs/20250317"
 df = spark.read.json(input_path)
 
 df.createOrReplaceTempView("my_json")
@@ -27,13 +27,13 @@ df.createOrReplaceTempView("my_json")
 # """)
 
 cleaned_df = spark.sql("""
-    select distinct http_request_uri from my_json
+    select * from my_json
 """)
 
 # cleaned_df.show()
 
 # output_path = "file:///Users/tangqiliang/Documents/工作/files/pvuv_logs/202412/output"
-output_path = "file:///Users/tangqiliang/Documents/工作/files/搜索日志/20250116/output"
+output_path = "file:///Users/tangqiliang/Documents/工作/files/pvuv_logs/20250317/output"
 
 # 导出parquet文件
 cleaned_df.repartition(3).write.mode("overwrite").format("parquet").save(output_path)

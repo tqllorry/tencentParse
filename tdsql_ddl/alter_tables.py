@@ -148,7 +148,7 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
 
         for line in ck_lines:
             if line.startswith('add'):
-                dml_type, table_name, create_sql = line.strip().split('&^*=')
+                dml_type, table_name, create_sql = line.replace("DEFAULT \\'\\'", "DEFAULT \'\'").strip().split('&^*=')
                 if table_name != last_table_name:
                     w.write(f"\n-- {table_name}\n")
                     last_table_name = table_name
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     # 再次执行此脚本，生成output_sql_final.sql
     # 检查MySQL测试库中 新建表 的字段，补充默认值和备注
     # 再次执行此脚本，生成output_sql_final_shell.sql
-    mysql_db_name = 'e51dd52002fe11f08e23ba62037e8f31'
+    mysql_db_name = 'e1dc97900df611f0becb92cf1d6e1d6b'
     ck_db_name = 'swan_85535ed0c66311e5a2f8bf5011933e87'
 
     run(mysql_db_name, ck_db_name)
