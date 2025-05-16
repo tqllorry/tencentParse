@@ -121,9 +121,23 @@ for db in loop_list:
 
 if os.path.exists(temp_tsv_path):
     if table == 'ai_histories':
+        # 删除行数过长的行
+        try:
+            original_lines = int(subprocess.check_output(['wc', '-l', temp_tsv_path]).split()[0])
+        except subprocess.CalledProcessError:
+            print("统计原始文件行数失败。")
+            exit(1)
+
         awk_command = "awk \'length($0) <= 467968\' {} > {} && rm -rf {}".format(temp_tsv_path, tsv_path, temp_tsv_path)
+        # awk_command = "perl -i -ne \'print if length($_) <= 467968\' {}".format(temp_tsv_path)
         if subprocess.call(awk_command, shell=True) == 0:
-            print("已处理文件 {}，并将结果写入 {}。".format(temp_tsv_path, tsv_path))
+            try:
+                new_lines = int(subprocess.check_output(['wc', '-l', temp_tsv_path]).split()[0])
+                deleted_lines = original_lines - new_lines
+                print("已处理文件 {}，删除 {} 行，并将结果写入 {}。".format(temp_tsv_path, deleted_lines, tsv_path))
+                # print("已处理文件 {}，删除 {} 行。".format(temp_tsv_path, deleted_lines))
+            except subprocess.CalledProcessError:
+                print("统计新文件行数失败。")
         else:
             print("执行 awk 命令时出错。")
     else:

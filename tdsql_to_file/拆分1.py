@@ -3,7 +3,7 @@ import argparse
 import sys
 
 
-def split_content(content, max_size=0.01953125 * 1024):
+def split_content(content, max_size=400 * 1024):
     content_bytes = content.encode('utf-8')
     if len(content_bytes) <= max_size:
         return [(0, content)]

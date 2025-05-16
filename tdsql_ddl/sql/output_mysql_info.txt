@@ -1,19 +1,9 @@
-add&^*=kb_permission_applications&^*=incr_id
+add&^*=event_sessions&^*=id
 
-add&^*=kb_permission_approvals&^*=incr_id
+add&^*=token_package_logs&^*=id
 
-add&^*=ud_field_values&^*=incr_id
+add&^*=parse_package_logs&^*=id
 
-update&^*=kb_entries&^*=status&^*=entry_type&^*=entry解析状态
+add&^*=token_packages&^*=id
 
-update&^*=kb_files&^*=status&^*=revision_id&^*=file解析状态
-
-update&^*=kb_file_revisions&^*=created_from&^*=reverted_from&^*=来源
-
-update&^*=learning_roadmaps&^*=enable_board_remind&^*=new_member_remind_times&^*=是否开启学员直属上级看板提醒
-
-update&^*=learning_roadmaps&^*=board_remind_start_time&^*=enable_board_remind&^*=开始提醒时间
-
-update&^*=learning_roadmaps&^*=board_remind_end_time&^*=board_remind_start_time&^*=结束提醒时间
-
-update&^*=learning_roadmaps&^*=board_remind_times&^*=board_remind_end_time&^*=上级看板提醒时间段
+add&^*=parse_packages&^*=id

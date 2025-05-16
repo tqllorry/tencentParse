@@ -1,14 +1,16 @@
 -- 【DB变更审核】
 
--- 时间：20250331
+-- 时间：20250425
 
 -- 公司库：
--- kb_permission_applications[新建表]
--- kb_permission_approvals[新建表]
--- ud_field_values[新建表]
--- kb_entries[新增字段 status, 新建索引(parent_id, status)]
--- kb_files[新增字段 status, 新建索引(entry_id, status)]
--- kb_file_revisions[新增字段 created_from]
--- learning_roadmaps[新增字段 enable_board_remind, board_remind_start_time, board_remind_end_time, board_remind_times]
-
+-- event_attendees[新增字段 incr_id, session_id, 新增唯一索引(event_id, session_id, staff_id), 移除主键(event_id, staff_id), 新增主键(incr_id)]
+-- event_attend_applications[新增字段 session_id, 新增唯一索引(event_id, session_id, staff_id), 移除索引(event_id, staff_id)]
+-- event_staff[新增字段 session_id, quit_at, 新增唯一索引(event_id, session_id, staff_id), 移除索引(event_id, staff_id)]
+-- event_sessions[新建表]
+-- token_package_logs[新建表]
+-- parse_package_logs[新建表]
+-- token_packages[新建表]
+-- parse_packages[新建表]
+-- flux_packages[新增字段 sub_server_type]
+-- storage_packages[新增字段 sub_server_type]
 

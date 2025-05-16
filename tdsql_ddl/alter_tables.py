@@ -57,7 +57,7 @@ def generate_select_mysql(file_path1, output_file_path1, db_name1):
             sql = '''SELECT concat_ws('&^*=','update',a.TABLE_NAME,a.COLUMN_NAME,b.COLUMN_NAME,a.COLUMN_COMMENT) from
         (SELECT * FROM information_schema.COLUMNS
         WHERE TABLE_SCHEMA = 'swan_{}' AND TABLE_NAME = '{}' and COLUMN_NAME in({})) a
-        join information_schema.COLUMNS b on b.TABLE_SCHEMA = 'swan_{}' AND b.TABLE_NAME = '{}' and a.ORDINAL_POSITION = b.ORDINAL_POSITION + 1
+        join information_schema.COLUMNS b on b.TABLE_SCHEMA = 'swan_{}' AND b.TABLE_NAME = '{}' and if(a.ORDINAL_POSITION = 1, 2, a.ORDINAL_POSITION) = b.ORDINAL_POSITION + 1
             '''.format(db_name1, table_name, field_str, db_name1, table_name)
 
             sql_list.append(sql)
@@ -118,7 +118,8 @@ def generate_select_ck(file_path1, output_file_path1, db_name1):
 
     # 将多个SQL语句拼接成一个大的SQL语句
     if update_sql_list:
-        update_big_sql = "SELECT concat('update&^*=',table,'&^*=',name,'&^*=',concat(type,' ',default_kind,' ',default_expression)) FROM system.columns WHERE database='{}' and (".format(ck_db_name) + ' or'.join(
+        update_big_sql = "SELECT concat('update&^*=',table,'&^*=',name,'&^*=',concat(type,' ',default_kind,' ',default_expression)) FROM system.columns WHERE database='{}' and (".format(
+            ck_db_name) + ' or'.join(
             update_sql_list) + ');'
     else:
         update_big_sql = "select ''"
@@ -224,19 +225,23 @@ def generate_alter_table_statement(mysql_result_path1, ck_result_path1, output_f
                 f.write(f"\n-- {table_name}\n")
                 last_table_name = table_name
             column_types = ', '.join(final_dict[key][:-2])
-            after_column = final_dict[key][-2]
+            after_column = 'AFTER `' + final_dict[key][-2] + '`'
+
+            # 如果字段是第一个字段，则不添加after
+            if column_name == final_dict[key][-2]:
+                after_column = ''
             comment = final_dict[key][-1]
             if comment:
                 comment = f"'{comment}'"
                 f.write(
-                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} COMMENT {comment} AFTER `{after_column}`;\n")
+                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} COMMENT {comment} {after_column};\n")
                 f.write(
-                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} COMMENT {comment} AFTER `{after_column}`;\n\n")
+                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} COMMENT {comment} {after_column};\n\n")
             else:
                 f.write(
-                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} AFTER `{after_column}`;\n")
+                    f"ALTER TABLE lx.{table_name}_local on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} {after_column};\n")
                 f.write(
-                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} AFTER `{after_column}`;\n\n")
+                    f"ALTER TABLE lx.{table_name} on cluster default_cluster ADD COLUMN IF NOT EXISTS `{column_name}` {column_types} {after_column};\n\n")
 
     with open(output_file_path1, 'r') as f:
         lines = f.readlines()
@@ -280,7 +285,7 @@ if __name__ == "__main__":
     # 再次执行此脚本，生成output_sql_final.sql
     # 检查MySQL测试库中 新建表 的字段，补充默认值和备注
     # 再次执行此脚本，生成output_sql_final_shell.sql
-    mysql_db_name = 'e1dc97900df611f0becb92cf1d6e1d6b'
-    ck_db_name = 'swan_85535ed0c66311e5a2f8bf5011933e87'
+    mysql_db_name = '1caf5b76218111f09b7c9ec801154f04'
+    ck_db_name = 'swan'
 
     run(mysql_db_name, ck_db_name)
