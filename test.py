@@ -1,52 +1,92 @@
-# coding:utf-8
-"""
-PythonSQL Demo
-Python Version 2.7
-Python Doc https://docs.python.org/2.7/contents.html
-"""
+from __future__ import print_function
 
 import re
+import sys
+
 from datetime import datetime, date, timedelta
+from pyspark.sql import SparkSession
 
+ds = '20250611'
+match = re.match(r"(\d{4})(\d{2})(\d{2})", ds)
+daySub = match.group(1, 2, 3)
+input_day = datetime(int(daySub[0]), int(daySub[1]), int(daySub[2]))
 
-def TDW_PL(tdw, argv):
-    tdw.WriteLog('PythonSQL start')
+# ======================== 日需求日期 ========================
+# 指定的数据日期的年月日
+dt_year = daySub[0]
+dt_month = daySub[1]
+dt_day = daySub[2]
+print('dt_year={}, dt_month={}, dt_day={}'.format(dt_year, dt_month, dt_day))
 
-    query = 'select database_name, table_name, safe_partition_days from lx_saas.dim_lx_table_save_partition_info'
-    tdw.WriteLog('sql=%s' % query)
-    res = tdw.execute(query)
-    tdw.WriteLog(res)
+# 指定的数据日期，%Y%m%d格式
+dt = input_day.strftime('%Y%m%d')
+print('dt=%s' % dt)
 
-    for row in res:
-        fields = row.split('\t')
-        if len(fields) != 3:
-            tdw.WriteLog('Error: Expected 3 columns, got %d: %s' % (len(fields), str(row)))
-            continue
+# 指定的数据日期，%Y-%m-%d格式
+DT_WITH_SEPARTOR = '{y}-{m}-{d}'.format(y=dt_year, m=dt_month, d=dt_day)
+print('dt_with_separtor=%s' % DT_WITH_SEPARTOR)
 
-        database_name, table_name, safe_partition_days = fields
+# ======================== 周需求日期 ========================
+week_index = input_day.weekday()
+monday = (input_day + timedelta(days=-week_index)).strftime("%Y%m%d")
+match = re.match(r"(\d{4})(\d{2})(\d{2})", monday)
+daySub = match.group(1, 2, 3)
 
-        safe_partition_days = int(safe_partition_days)
+# 指定的数据日期的周一的年月日
+monday_year = daySub[0]
+monday_month = daySub[1]
+monday_day = daySub[2]
 
-        delete_date = datetime.now() - timedelta(days=safe_partition_days)
-        # 获取年、月、日
-        dt_year = delete_date.strftime('%Y')
-        dt_month = delete_date.strftime('%m')
-        dt_day = delete_date.strftime('%d')
-        # 构造删除分区的SQL语句
-        drop_partition_query = (
-                "ALTER TABLE %s.%s DROP IF EXISTS PARTITION (year='%s', month='%s', day='%s')"
-                % (database_name, table_name, dt_year, dt_month, dt_day)
-        )
+# 指定的数据日期的周一的年月日
+MONDAY_DT = '{y}{m}{d}'.format(y=monday_year, m=monday_month, d=monday_day)
+MONDAY_DT_WITH_SEPARTOR = '{y}-{m}-{d}'.format(y=monday_year, m=monday_month, d=monday_day)
 
-        # 写入日志
-        tdw.WriteLog('sql=%s' % drop_partition_query)
+print('monday_year={}, monday_month={}, monday_day={}'.format(monday_year, monday_month, monday_day))
+print('monday_dt=%s' % MONDAY_DT)
+print('monday_dt_with_separtor=%s' % MONDAY_DT_WITH_SEPARTOR)
 
-        # 执行删除分区操作
-        # try:
-        #     res = tdw.execute(drop_partition_query)
-        #     tdw.WriteLog(res)
-        #     tdw.WriteLog("Deleted partition from %s.%s for date %s" % (database_name, table_name, delete_date_str))
-        # except Exception as e:
-        #     tdw.WriteLog("Error deleting partition from %s.%s: %s" % (database_name, table_name, str(e)))
+# ======================== 其他需求日期 ========================
+# 计算当日的昨天日期
+yesterday = (date.today() + timedelta(days=-1)).strftime("%Y%m%d")
+print('yesterday=%s' % yesterday)
 
-    tdw.WriteLog('PythonSQL end')
+# 指定的数据日期前一天
+last_dt = (input_day + timedelta(days=-1)).strftime("%Y%m%d")
+last_last_dt = (input_day + timedelta(days=-2)).strftime("%Y%m%d")
+prev7d_dt = (input_day + timedelta(days=-7)).strftime("%Y%m%d")
+prev8d_dt = (input_day + timedelta(days=-8)).strftime("%Y%m%d")
+prev29d_dt = (input_day + timedelta(days=-29)).strftime("%Y%m%d")
+
+print('last_dt=%s' % last_dt)
+print('last_last_dt=%s' % last_last_dt)
+print('prev7d_dt=%s' % prev7d_dt)
+print('prev8d_dt=%s' % prev8d_dt)
+print('prev29d_dt=%s' % prev29d_dt)
+
+if input_day.month == 1:
+    prev_month_year = input_day.year - 1
+    prev_month = 12
+else:
+    prev_month_year = input_day.year
+    prev_month = input_day.month - 1
+
+# 获取前一个月的最后一天
+prev_month_last_day = (input_day.replace(day=1) - timedelta(days=1)).strftime('%Y%m%d')
+prev_month_date = (input_day.replace(day=1) - timedelta(days=1)).strftime('%Y%m')
+
+print('前一个月的月末日期:', prev_month_last_day)
+print('前一个月的月末日期:', prev_month_date)
+
+print(monday)
+print(MONDAY_DT)
+print(week_index)
+
+# 计算前一天日期
+prev_day = (datetime.strptime(MONDAY_DT, "%Y%m%d") + timedelta(days=-1)) .strftime("%Y%m%d")
+
+print('MONDAY_DT的前一天日期:', prev_day)
+
+# 上个月的日期格式（Python 2.7 语法）
+prev_month_str = "{0}{1:02d}".format(prev_month_year, prev_month)
+print(prev_month_str)
+

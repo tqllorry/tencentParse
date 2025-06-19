@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser(description='ck_to_hive')
 parser.add_argument('--ck_database', '-cd', help='必要参数', required=True)
 parser.add_argument('--ck_list_path', '-path', help='必要参数', required=True)
 parser.add_argument('--tdsqlhid', '-tdsqlhid', help='必要参数', required=True)
-parser.add_argument('--cdbid', '-cdbid', help='必要参数', required=True)
+parser.add_argument('--ck_cdbid', '-ck_cdbid', help='必要参数', required=True)
 parser.add_argument('--manually_table_path', '-manually_table_path', help='必要参数', required=True)
 parser.add_argument('--cdcid', '-cdcid', help='条件参数', required=False)
 args = parser.parse_args()
@@ -22,7 +22,7 @@ args = parser.parse_args()
 database = args.ck_database
 ck_list_path = args.ck_list_path
 tdsqlhid = args.tdsqlhid
-cdbid = args.cdbid
+ck_cdbid = args.ck_cdbid
 manually_table_path = args.manually_table_path
 cdcid = args.cdcid
 
@@ -71,9 +71,9 @@ print(time.strftime("%H:%M:%S"))
 
 condition = ''
 if database == 'lx':
-    condition = 'and SrcCDBID=\'{}\''.format(cdbid)
+    condition = 'and SrcCDBID=\'{}\''.format(ck_cdbid)
 elif database == 'lx_yz_others':
-    condition = '_srcInstanceID=\'{}\''.format(cdcid)
+    condition = 'and _srcInstanceID=\'{}\''.format(cdcid)
 else:
     condition = ''
 

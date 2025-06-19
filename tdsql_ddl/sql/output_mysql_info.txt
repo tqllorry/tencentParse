@@ -1,9 +1,3 @@
-add&^*=event_sessions&^*=id
+update&^*=ai_train_scenarios&^*=enable_rank&^*=limited_practice_times&^*=是否开启排行榜
 
-add&^*=token_package_logs&^*=id
-
-add&^*=parse_package_logs&^*=id
-
-add&^*=token_packages&^*=id
-
-add&^*=parse_packages&^*=id
+update&^*=kb_async_tasks&^*=retry_times&^*=input_data&^*=失败重试次数
