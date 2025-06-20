@@ -119,30 +119,5 @@ for db in loop_list:
         print("ck导出成功: {}.{}".format(temp_tsv_path, ck_config['index']))
         print(time.strftime("%H:%M:%S"))
 
-if os.path.exists(temp_tsv_path):
-    if table == 'ai_histories':
-        # 删除行数过长的行
-        try:
-            original_lines = int(subprocess.check_output(['wc', '-l', temp_tsv_path]).split()[0])
-            print("原始文件行数为 {}。".format(original_lines))
-        except subprocess.CalledProcessError:
-            print("统计原始文件行数失败。")
-            exit(1)
-
-        awk_command = "awk \'length($0) <= 460800\' {} > {}".format(temp_tsv_path, tsv_path)
-        # awk_command = "perl -i -ne \'print if length($_) <= 467968\' {}".format(temp_tsv_path)
-        if subprocess.call(awk_command, shell=True) == 0:
-            try:
-                new_lines = int(subprocess.check_output(['wc', '-l', tsv_path]).split()[0])
-                print("处理后文件行数为 {}。".format(new_lines))
-                deleted_lines = original_lines - new_lines
-                rm_command = "rm -rf {}".format(temp_tsv_path)
-                subprocess.call(rm_command, shell=True)
-                print("已处理文件 {}，删除 {} 行，并将结果写入 {}。".format(temp_tsv_path, deleted_lines, tsv_path))
-                # print("已处理文件 {}，删除 {} 行。".format(temp_tsv_path, deleted_lines))
-            except subprocess.CalledProcessError:
-                print("统计新文件行数失败")
-        else:
-            print("执行 awk 命令时出错。")
-    else:
-        os.rename(temp_tsv_path, tsv_path)
+if os.path.exists(temp_tsv_path) and table != 'ai_histories':
+    os.rename(temp_tsv_path, tsv_path)
